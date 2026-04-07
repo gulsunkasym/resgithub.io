@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Рестораны Манаса PRO</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<!-- HEADER С ФОНОМ -->
+<header class="text-white text-center relative"
+        style="background-image: url('https://ru.kabar.kg/media/images/WhatsApp_Image_fFjw8Et.max-25.max-1920x1080.format-webp.webp'); 
+               background-size: cover; 
+               background-position: center; 
+               background-repeat: no-repeat; 
+               height: 500px;">
+  <div class="absolute inset-0 bg-black/50"></div>
+  <h1 class="text-3xl font-bold relative z-10 pt-20">Рестораны Манаса</h1>
+</header>
+
+<div class="max-w-6xl mx-auto p-4">
+
+<!-- SEARCH + FILTER -->
+<div class="flex flex-col md:flex-row gap-3 mb-4">
+  <input id="search" placeholder="Поиск..." class="p-3 w-full border rounded">
+  <select id="filter" class="p-3 border rounded">
+    <option value="0">Все рейтинги</option>
+    <option value="4.5">4.5+</option>
+    <option value="4.7">4.7+</option>
+    <option value="4.8">4.8+</option>
+  </select>
+</div>
+
+<div class="flex gap-3 mb-4">
+  <button onclick="showFavorites()" class="bg-pink-500 text-white px-4 py-2 rounded">
+    Избранное
+  </button>
+
+  <button onclick="openCart()" class="bg-green-600 text-white px-4 py-2 rounded">
+    Корзина (<span id="count">0</span>)
+  </button>
+</div>
+
+<div id="list" class="grid md:grid-cols-3 gap-4"></div>
+
+<div id="restaurantPage" class="hidden"></div>
+
+</div>
+
+<!-- CART -->
+<div id="cartModal" class="hidden fixed inset-0 bg-black/50 flex justify-center items-center">
+  <div class="bg-white p-6 rounded w-96">
+    <h2 class="text-xl mb-4">Корзина</h2>
+    <div id="cartItems"></div>
+    <p class="mt-3 font-bold">Сумма: <span id="total">0</span> с</p>
+    <input id="address" placeholder="Введите адрес" class="w-full p-2 border mt-3">
+    <button onclick="checkout()" class="mt-3 bg-green-600 text-white w-full py-2 rounded">
+      Оформить заказ
+    </button>
+    <button onclick="closeCart()" class="mt-2 bg-red-500 text-white w-full py-2 rounded">
+      Закрыть
+    </button>
+  </div>
+</div>
+
+<script>
+
+const data = [
+{
+id:1,
+name:"KIMCHI",
+rating:4.8,
+image:"https://images.unsplash.com/photo-1555396273-367ea4eb4db5",
+menu:{
+"Тамактар":[
+{name:"Пибимпаб",price:500,img:"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d",rating:4.9},
+{name:"Рамен",price:400,img:"https://sushipapa.com.ua/content/images/40/yak-pryhotuvaty-ramen-retsept-universalnoho-yaponskoho-supu-56099771941039.jpg",rating:4.8}
+],
+"Салаттар":[
+{name:"Кимчи салат",price:250,img:"https://www.russianfood.com/dycontent/images_upl/519/big_518244.jpg",rating:4.7}
+],
+"Напитки":[
+{name:"Чай",price:80,img:"https://lifehacker.ru/wp-content/uploads/2024/06/shutterstock_2324441629_1_1717584057_e1717584116936.jpg",rating:4.6}
+]
+}
+},
+{
+id:2,
+name:"ANDALUS",
+rating:4.9,
+image:"https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c",
+menu:{
+"Тамактар":[
+{name:"Плов",price:600,img:"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d",rating:5},
+{name:"Манты",price:450,img:"https://sun9-32.userapi.com/s/v1/ig2/IEhDy5nSNY6_XOJ3v1D_MEfPb0v6hGfR-kq1jpJlrsp92-rB3prggakviD8536bAWM1fZJOSeoBioAPdBCdXoFVS.jpg?quality=95",rating:4.8}
+],
+"Салаттар":[
+{name:"Овощной",price:200,img:"https://images.unsplash.com/photo-1540189549336-e6e99c3679fe",rating:4.5}
+],
+"Напитки":[
+{name:"Кола",price:120,img:"https://images.unsplash.com/photo-1581636625402-29b2a704ef13",rating:4.6}
+]
+}
+},
+{
+id:3,
+name:"ORDO",
+rating:4.7,
+image:"https://images.squarespace-cdn.com/content/v1/60ecba6b81342d312c36d496/de4f7637-465c-4394-a049-b1a6002ef9b8/ORDO+LOGO.jpg",
+menu:{
+"Тамактар":[
+{name:"Стейк",price:700,img:"https://images.unsplash.com/photo-1551183053-bf91a1d81141",rating:4.9}
+],
+"Салаттар":[
+{name:"Цезарь",price:300,img:"https://images.unsplash.com/photo-1550304943-4f24f54ddde9",rating:4.7}
+],
+"Напитки":[
+{name:"Сок",price:150,img:"https://hurom.com.ua/wp-content/uploads/2023/10/front-view-of-fresh-natural-delicious-juice-in-two-glasses-with-red-apple-limes-on-black-background-scaled.jpg",rating:4.6}
+]
+}
+},
+{
+id:4,
+name:"AURUM",
+rating:4.6,
+image:"https://sochi.com/upload/iblock/152/hc7tp8ojwc2f8en3xbgkski58lq157zj/003_210709_1857_1.jpg",
+menu:{
+"Тамактар":[
+{name:"Суши",price:800,img:"https://korfood.ru/upload/disk/5b1/c0ruz2z1y7npnb4qsyffysubw79q3uuz",rating:4.8}
+],
+"Салаттар":[
+{name:"Японский салат",price:350,img:"https://images.unsplash.com/photo-1540189549336-e6e99c3679fe",rating:4.6}
+],
+"Напитки":[
+{name:"Смузи",price:200,img:"https://e52e3ee2-628b-49a9-9e26-e5a61fd72b20.selcdn.net/upload/resize_cache/iblock/de9/1920_1080_1/3%20%D0%9F%D1%80%D0%BE%D1%81%D1%82%D0%BE%D0%B9%20%D1%81%D0%BC%D1%83%D0%B7%D0%B8%20%D1%81%20%D0%B7%D0%B0%D0%BC%D0%BE%D1%80%D0%BE%D0%B6%D0%B5%D0%BD%D0%BD%D1%8B%D0%BC%D0%B8%20%D1%8F%D0%B3%D0%BE%D0%B4%D0%B0%D0%BC%D0%B8.jpg",rating:4.7}
+]
+}
+},
+{
+id:5,
+name:"I LOVE BURGER",
+rating:4.8,
+image:"https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/13/48/fb/inside.jpg?w=900&h=500&s=1",
+menu:{
+"Тамактар":[
+{name:"Бургер",price:300,img:"https://images.unsplash.com/photo-1550547660-d9450f859349",rating:4.9}
+],
+"Фри":[
+{name:"Картошка фри",price:150,img:"https://images.unsplash.com/photo-1541592106381-b31e9677c0e5",rating:4.6}
+],
+"Напитки":[
+{name:"Лимонад",price:130,img:"https://images.unsplash.com/photo-1497534446932-c925b458314e",rating:4.7}
+]
+}
+}
+];
+
+let cart = [];
+let fav = [];
+
+function render(list=data){
+let search = document.getElementById("search").value.toLowerCase();
+let filter = document.getElementById("filter").value;
+
+let filtered = list.filter(r =>
+r.name.toLowerCase().includes(search) &&
+(filter==0 || r.rating>=filter)
+);
+
+document.getElementById("list").innerHTML = filtered.map(r=>`
+<div class="bg-white rounded shadow">
+<img src="${r.image}" class="w-full h-40 object-cover">
+<div class="p-4">
+<h2 class="text-lg font-bold">${r.name}</h2>
+<p>⭐ ${r.rating}</p>
+<button onclick="openRestaurant(${r.id})" class="bg-amber-600 text-white w-full mt-2 py-2 rounded">
+Подробнее
+</button>
+<button onclick="toggleFav(${r.id})" class="mt-2">
+${fav.includes(r.id) ? "❤️" : "🤍"}
+</button>
+</div>
+</div>
+`).join("");
+}
+
+function openRestaurant(id){
+let r = data.find(x=>x.id==id);
+document.getElementById("list").style.display="none";
+document.getElementById("restaurantPage").classList.remove("hidden");
+document.getElementById("restaurantPage").innerHTML = `
+<button onclick="back()" class="mb-4">← Назад</button>
+<h1 class="text-2xl font-bold mb-3">${r.name}</h1>
+<img src="${r.image}" class="w-full h-60 object-cover rounded mb-4">
+${Object.entries(r.menu).map(([cat,items])=>`
+<h2 class="text-xl font-bold mt-4">${cat}</h2>
+<div class="grid md:grid-cols-2 gap-3">
+${items.map(item=>`
+<div class="bg-white p-3 rounded shadow">
+<img src="${item.img}" class="w-full h-32 object-cover rounded mb-2">
+<div class="flex justify-between items-center">
+<div>
+<p class="font-bold">${item.name}</p>
+<p>${item.price} с</p>
+<p>⭐ ${item.rating}</p>
+</div>
+<button onclick="add('${item.name}', ${item.price})"
+class="bg-green-500 text-white px-3 py-1 rounded">+</button>
+</div>
+</div>
+`).join("")}
+</div>
+`).join("")}
+`;
+}
+
+function back(){
+document.getElementById("restaurantPage").classList.add("hidden");
+document.getElementById("list").style.display="grid";
+}
+
+function add(name,price){
+cart.push({name,price});
+updateCart();
+}
+
+function updateCart(){
+document.getElementById("count").innerText = cart.length;
+}
+
+function openCart(){
+document.getElementById("cartModal").classList.remove("hidden");
+let total=0;
+document.getElementById("cartItems").innerHTML = cart.map((i,index)=>{
+total+=i.price;
+return `
+<div class="flex justify-between border-b py-2">
+${i.name} - ${i.price}
+<button onclick="removeItem(${index})">❌</button>
+</div>
+`;
+}).join("");
+document.getElementById("total").innerText=total;
+}
+
+function closeCart(){
+document.getElementById("cartModal").classList.add("hidden");
+}
+
+function removeItem(i){
+cart.splice(i,1);
+openCart();
+updateCart();
+}
+
+function checkout(){
+let addr=document.getElementById("address").value;
+if(!addr){alert("Введите адрес");return;}
+alert("Заказ оформлен! "+addr);
+cart=[];
+updateCart();
+closeCart();
+}
+
+function toggleFav(id){
+if(fav.includes(id)){
+fav=fav.filter(x=>x!=id);
+}else{
+fav.push(id);
+}
+render();
+}
+
+function showFavorites(){
+render(data.filter(x=>fav.includes(x.id)));
+}
+
+document.getElementById("search").oninput=()=>render();
+document.getElementById("filter").onchange=()=>render();
+render();
+
+</script>
+
+</body>
+</html>
